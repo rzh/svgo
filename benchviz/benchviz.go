@@ -17,7 +17,7 @@ import (
 // geometry defines the layout of the visualization
 type geometry struct {
 	top, left, width, height, vwidth, vp, barHeight int
-	dolines, coldata                                bool
+	dolines, coldata, coltitle, coltitle_not_print  bool
 	title, rcolor, scolor, style                    string
 	deltamax, speedupmax                            float64
 }
@@ -98,8 +98,8 @@ func (g *geometry) visualize(canvas *svg.SVG, filename string, f io.Reader) {
 			continue
 
 		case strings.HasPrefix(name, "#"):
-			y += vspacing
-			canvas.Text(g.left, y, line[1:], "font-style:italic;fill:gray")
+			y += int(float64(vspacing) * 0.7)
+			canvas.Text(g.left, y, line[1:], "font-style:italic;fill:gray;font-size:70%")
 			continue
 		}
 
@@ -177,9 +177,18 @@ func (g *geometry) bars(canvas *svg.SVG, x, y, w, h, vs int, bmtype, name, value
 
 	// print old & new value
 	canvas.Text(g.left+325, y+(h/2), value_old, "text-anchor:start;font-size:55%")
-	canvas.Text(g.left+400, y+(h/2), value_new, "text-anchor:start;font-size:55%")
+	canvas.Text(g.left+430, y+(h/2), value_new, "text-anchor:start;font-size:55%")
 	if g.dolines {
 		canvas.Line(g.left, y+vs, g.left+(g.width-g.left), y+vs, "stroke:lightgray;stroke-width:1")
+	}
+
+	if g.coltitle && g.coltitle_not_print {
+		canvas.Text(g.left, y-(h/2), "TestCase", "text-anchor:start;font-size:70%;font-weight:bold")
+
+		// print old & new value
+		canvas.Text(g.left+325, y-(h/2), "Baseline", "text-anchor:start;font-size:70%;font-weight:bold")
+		canvas.Text(g.left+430, y-(h/2), "Test Data", "text-anchor:start;font-size:70%;font-weight:bold")
+		g.coltitle_not_print = false
 	}
 }
 
@@ -200,25 +209,28 @@ func main() {
 		style        = flag.String("style", "bar", "set the style (bar or inline)")
 		lines        = flag.Bool("line", false, "show lines between entries")
 		coldata      = flag.Bool("col", false, "show data in a single column")
+		coltitle     = flag.Bool("coltitle", true, "show title for columns")
 	)
 	flag.Parse()
 
 	g := geometry{
-		width:      *width,
-		height:     *height,
-		top:        *top,
-		left:       *left,
-		vp:         *vp,
-		vwidth:     *vw,
-		barHeight:  *bh,
-		title:      *title,
-		scolor:     *speedcolor,
-		rcolor:     *regresscolor,
-		style:      *style,
-		dolines:    *lines,
-		coldata:    *coldata,
-		speedupmax: *smax,
-		deltamax:   *dmax,
+		width:              *width,
+		height:             *height,
+		top:                *top,
+		left:               *left,
+		vp:                 *vp,
+		vwidth:             *vw,
+		barHeight:          *bh,
+		title:              *title,
+		scolor:             *speedcolor,
+		rcolor:             *regresscolor,
+		style:              *style,
+		dolines:            *lines,
+		coldata:            *coldata,
+		speedupmax:         *smax,
+		deltamax:           *dmax,
+		coltitle:           *coltitle,
+		coltitle_not_print: true,
 	}
 	canvas := svg.New(os.Stdout)
 	canvas.Start(g.width, g.height)
