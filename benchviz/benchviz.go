@@ -66,17 +66,20 @@ func (g *geometry) visualize(canvas *svg.SVG, filename string, f io.Reader) {
 	canvas.Text(g.left, g.top, bmtitle, "font-size:150%")
 	for x, y, nr := g.left+g.vp, g.top+vspacing, 0; err == nil; nr++ {
 		line, err = in.ReadString('\n')
-		fields := strings.Split(strings.TrimSpace(line), ` `)
+		fields := strings.Fields(strings.TrimSpace(line))
 
 		if len(fields) <= 1 || len(line) < 2 {
 			continue
 		}
 		name := fields[0]
+		value_old := fields[1]
+		value_new := fields[2]
 		value := fields[len(fields)-1]
 		if len(value) > 2 {
 			vs = value[:len(value)-1]
 		}
 		v, _ := strconv.ParseFloat(vs, 64)
+		v = v * -1 // RUI, deal with delta for ops/s
 		av := math.Abs(v)
 
 		switch {
@@ -103,11 +106,11 @@ func (g *geometry) visualize(canvas *svg.SVG, filename string, f io.Reader) {
 		bw := int(vmap(av, dmin, dmax, 0, float64(vizwidth)))
 		switch g.style {
 		case "bar":
-			g.bars(canvas, x, y, bw, bh, vspacing/2, bmtype, name, value, v)
+			g.bars(canvas, x, y, bw, bh, vspacing/2, bmtype, name, value, value_old, value_new, v)
 		case "inline":
 			g.inline(canvas, g.left, y, bw, bh, bmtype, name, value, v)
 		default:
-			g.bars(canvas, x, y, bw, bh, vspacing/2, bmtype, name, value, v)
+			g.bars(canvas, x, y, bw, bh, vspacing/2, bmtype, name, value, value_old, value_new, v)
 		}
 		y += vspacing
 	}
@@ -137,8 +140,8 @@ func (g *geometry) inline(canvas *svg.SVG, x, y, w, h int, bmtype, name, value s
 }
 
 // bars creates barchart style visualization
-func (g *geometry) bars(canvas *svg.SVG, x, y, w, h, vs int, bmtype, name, value string, v float64) {
-	canvas.Gstyle("font-style:italic;font-size:75%")
+func (g *geometry) bars(canvas *svg.SVG, x, y, w, h, vs int, bmtype, name, value, value_old, value_new string, v float64) {
+	canvas.Gstyle("font-style:italic;font-size:65%")
 	toffset := h / 4
 	var tx int
 	var tstyle string
@@ -170,7 +173,11 @@ func (g *geometry) bars(canvas *svg.SVG, x, y, w, h, vs int, bmtype, name, value
 		canvas.Text(tx, y+toffset, value, tstyle)
 	}
 	canvas.Gend()
-	canvas.Text(g.left, y+(h/2), name, "text-anchor:start")
+	canvas.Text(g.left, y+(h/2), name, "text-anchor:start;font-size:70%")
+
+	// print old & new value
+	canvas.Text(g.left+325, y+(h/2), value_old, "text-anchor:start;font-size:55%")
+	canvas.Text(g.left+400, y+(h/2), value_new, "text-anchor:start;font-size:55%")
 	if g.dolines {
 		canvas.Line(g.left, y+vs, g.left+(g.width-g.left), y+vs, "stroke:lightgray;stroke-width:1")
 	}
