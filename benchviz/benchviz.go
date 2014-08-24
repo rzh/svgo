@@ -13,7 +13,10 @@ import (
 	"strings"
 
 	"github.com/ajstarks/svgo"
+	. "github.com/visionmedia/go-debug"
 )
+
+var debug = Debug("info")
 
 // geometry defines the layout of the visualization
 type geometry struct {
@@ -180,7 +183,13 @@ func (g *geometry) bars(canvas *svg.SVG, x, y, w, h, vs int, bmtype, name, value
 
 	findColor := func(st string) string {
 		re := regexp.MustCompile("([0-9.]+)%")
-		f, e := strconv.ParseFloat(re.FindStringSubmatch(st)[1], 64)
+		t := re.FindStringSubmatch(st)
+
+		if len(t) < 2 {
+			debug("Failed to parse CV for: %s\n", st)
+			return ""
+		}
+		f, e := strconv.ParseFloat(t[1], 64)
 
 		if e == nil && f > 2.0 {
 			return ";fill:orange"
