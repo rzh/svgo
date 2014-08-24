@@ -8,6 +8,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -176,8 +177,19 @@ func (g *geometry) bars(canvas *svg.SVG, x, y, w, h, vs int, bmtype, name, value
 	canvas.Text(g.left, y+(h/2), name, "text-anchor:start;font-size:70%")
 
 	// print old & new value
-	canvas.Text(g.left+325, y+(h/2), value_old, "text-anchor:start;font-size:55%")
-	canvas.Text(g.left+430, y+(h/2), value_new, "text-anchor:start;font-size:55%")
+
+	findColor := func(st string) string {
+		re := regexp.MustCompile("([0-9.]+)%")
+		f, e := strconv.ParseFloat(re.FindStringSubmatch(st)[1], 64)
+
+		if e == nil && f > 2.0 {
+			return ";fill:orange"
+		}
+		return ""
+	}
+
+	canvas.Text(g.left+325, y+(h/2), strings.Replace(value_old, "[", " [", 1), "text-anchor:start;font-size:55%"+findColor(value_old))
+	canvas.Text(g.left+430, y+(h/2), strings.Replace(value_new, "[", " [", 1), "text-anchor:start;font-size:55%"+findColor(value_new))
 	if g.dolines {
 		canvas.Line(g.left, y+vs, g.left+(g.width-g.left), y+vs, "stroke:lightgray;stroke-width:1")
 	}
