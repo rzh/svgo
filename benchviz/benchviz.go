@@ -61,13 +61,13 @@ func (g *geometry) visualize(canvas *svg.SVG, filename string, f io.Reader) {
 
 	in := bufio.NewReader(f)
 	canvas.Gstyle(fmt.Sprintf("font-size:%dpx;font-family:sans-serif", bh))
-	canvas.Rect(0, 0, g.width, g.height, "stroke:lightgray;stroke-width:1;fill:white")
 	if g.title == "" {
 		bmtitle = filename
 	} else {
 		bmtitle = g.title
 	}
 	canvas.Text(g.left, g.top, bmtitle, "font-size:150%")
+	var _height int
 	for x, y, nr := g.left+g.vp, g.top+vspacing, 0; err == nil; nr++ {
 		line, err = in.ReadString('\n')
 		fields := strings.Fields(strings.TrimSpace(line))
@@ -117,7 +117,10 @@ func (g *geometry) visualize(canvas *svg.SVG, filename string, f io.Reader) {
 			g.bars(canvas, x, y, bw, bh, vspacing/2, bmtype, name, value, value_old, value_new, v)
 		}
 		y += vspacing
+		_height = y
 	}
+	//canvas.Rect(0, 0, g.width, g.height, "stroke:lightgray;stroke-width:1;fill:white")
+	canvas.Rect(0, 0, g.width, _height+10, "stroke:lightgray;stroke-width:1;fill:none")
 	canvas.Gend()
 }
 
