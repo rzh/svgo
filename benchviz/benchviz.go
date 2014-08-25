@@ -196,8 +196,14 @@ func (g *geometry) bars(canvas *svg.SVG, x, y, w, h, vs int, bmtype, name, value
 		}
 		f, e := strconv.ParseFloat(t[1], 64)
 
-		if e == nil && f > 2.0 {
-			return ";fill:orange"
+		if e == nil {
+			if f > 8.0 {
+				return ";fill:red;font-weight:bold"
+			} else if f > 5.0 {
+				return ";fill:red"
+			} else if f > 2.0 {
+				return ";fill:orange"
+			}
 		}
 		return ""
 	}
