@@ -201,7 +201,7 @@ func (g *geometry) bars(canvas *svg.SVG, x, y, w, h, vs int, bmtype, name, value
 				return ";fill:red;font-weight:bold"
 			} else if f > 5.0 {
 				return ";fill:red"
-			} else if f > 2.0 {
+			} else if f > 3.0 {
 				return ";fill:orange"
 			}
 		}
